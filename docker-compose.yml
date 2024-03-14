@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   api-nginx:
+    restart: always
     build:
       context: ./api/docker
       dockerfile: development/nginx/Dockerfile
@@ -13,6 +14,7 @@ services:
       - "8080:80"
 
   api-php-fpm:
+    restart: always
     build:
       context: ./api/docker
       dockerfile: development/php-fpm/Dockerfile
@@ -33,6 +35,7 @@ services:
     volumes:
       - ./api:/app
       - composer:/root/.composer/cache
+    tty: true
     depends_on:
       - api-postgres
       - api-redis
@@ -42,6 +45,7 @@ services:
       - centrifugo
 
   api-queue-worker:
+    restart: always
     build:
       context: ./api/docker
       dockerfile: development/php-cli/Dockerfile
@@ -59,6 +63,7 @@ services:
 
   api-postgres:
     image: postgres:16.1-alpine
+    restart: always
     volumes:
       - api-postgres:/var/lib/postgresql/data
     environment:
@@ -68,8 +73,15 @@ services:
     ports:
       - "54321:5432"
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8801:8080"
+
   api-redis:
     image: redis:7.0-alpine
+    restart: always
     volumes:
       - api-redis:/data
     command:
@@ -82,9 +94,10 @@ services:
 
   api-queue-redis:
     image: redis:7.0-alpine
+    restart: always
     volumes:
       - api-queue-redis:/data
-  
+
   storage:
     build:
       context: ./storage/docker
@@ -96,11 +109,13 @@ services:
 
   mailer:
     image: mailhog/mailhog
+    restart: always
     ports:
       - "8082:8025"
 
   centrifugo:
     image: centrifugo/centrifugo:v5.0
+    restart: always
     ulimits:
       nofile:
         soft: 65536
